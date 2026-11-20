@@ -7,6 +7,10 @@ The released versions correspond to PyPI releases.
 
 ### Fixes
 
+* `os.access` now returns `False` instead of raising for paths that cannot be
+  resolved for reasons other than a missing file (e.g. a file used as a directory,
+  a symlink loop or a too long name), like the real function
+
 * path operations on paths with too long path components now correctly raise
   `ENAMETOOLONG` under Posix
   (see [issue #1374](https://github.com/pytest-dev/pyfakefs/issues/1374))

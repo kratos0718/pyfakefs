@@ -2098,6 +2098,22 @@ class FakeOsModuleTest(FakeOsModuleTestBase):
         self.assertFalse(self.os.access(path, self.rwx))
         self.assertFalse(self.os.access(path, self.rw))
 
+    def test_access_file_as_directory_component(self):
+        file_path = self.make_path("foo")
+        self.create_file(file_path)
+        self.assertFalse(self.os.access(file_path + self.os.sep, self.os.F_OK))
+        self.assertFalse(
+            self.os.access(self.os.path.join(file_path, "bar"), self.os.F_OK)
+        )
+
+    def test_access_does_not_raise_for_invalid_paths_posix(self):
+        self.check_posix_only()
+        link_path = self.make_path("loop")
+        self.create_symlink(link_path, link_path)
+        self.assertFalse(self.os.access(link_path, self.os.F_OK))
+        too_long = self.make_path("a" * 300)
+        self.assertFalse(self.os.access(too_long, self.os.F_OK))
+
     def test_arguments_not_supported_under_windows(self):
         self.check_windows_only()
         path = self.make_path("foo", "bar")

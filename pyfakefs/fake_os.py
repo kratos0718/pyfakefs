@@ -1086,10 +1086,9 @@ class FakeOsModule:
         path = self._path_with_dir_fd(path, self.access, dir_fd)
         try:
             stat_result = self.stat(path, follow_symlinks=follow_symlinks)
-        except OSError as os_error:
-            if os_error.errno == errno.ENOENT:
-                return False
-            raise
+        except OSError:
+            # like the real os.access, report any failure as not accessible
+            return False
         if is_root():
             if mode & os.X_OK:
                 return stat_result.st_mode & 0o111 != 0
