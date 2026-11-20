@@ -3260,6 +3260,49 @@ class FakeOsModuleTest(FakeOsModuleTestBase):
         finally:
             self.os.close(fd)
 
+    def test_lseek_returns_new_position(self):
+        file_path = self.make_path("foo.txt")
+        self.create_file(file_path, contents=b"0123456789")
+        fd = self.os.open(file_path, os.O_RDONLY)
+        try:
+            self.assertEqual(4, self.os.lseek(fd, 4, os.SEEK_SET))
+            self.assertEqual(6, self.os.lseek(fd, 2, os.SEEK_CUR))
+            self.assertEqual(7, self.os.lseek(fd, -3, os.SEEK_END))
+            self.assertEqual(15, self.os.lseek(fd, 5, os.SEEK_END))
+            self.assertEqual(b"", self.os.read(fd, 1))
+        finally:
+            self.os.close(fd)
+
+    def test_lseek_before_start_raises(self):
+        file_path = self.make_path("foo.txt")
+        self.create_file(file_path, contents=b"0123456789")
+        fd = self.os.open(file_path, os.O_RDONLY)
+        try:
+            self.os.lseek(fd, 4, os.SEEK_SET)
+            self.assert_raises_os_error(
+                errno.EINVAL, self.os.lseek, fd, -1, os.SEEK_SET
+            )
+            self.assert_raises_os_error(
+                errno.EINVAL, self.os.lseek, fd, -5, os.SEEK_CUR
+            )
+            self.assert_raises_os_error(
+                errno.EINVAL, self.os.lseek, fd, -11, os.SEEK_END
+            )
+            self.assertEqual(4, self.os.lseek(fd, 0, os.SEEK_CUR))
+        finally:
+            self.os.close(fd)
+
+    def test_lseek_after_append_write(self):
+        file_path = self.make_path("foo.txt")
+        self.create_file(file_path, contents=b"hello")
+        fd = self.os.open(file_path, os.O_WRONLY | os.O_APPEND)
+        try:
+            self.os.lseek(fd, 0, os.SEEK_SET)
+            self.os.write(fd, b"Z")
+            self.assertEqual(6, self.os.lseek(fd, 0, os.SEEK_CUR))
+        finally:
+            self.os.close(fd)
+
 
 class RealOsModuleTest(FakeOsModuleTest):
     def use_real_fs(self):

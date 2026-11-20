@@ -385,12 +385,20 @@ class FakeOsModule:
         file_handle.flush()
         return len(contents)
 
-    def lseek(self, fd: int, pos: int, whence: int):
+    def lseek(self, fd: int, pos: int, whence: int) -> int:
         file_handle = self.filesystem.get_open_file(fd)
-        if isinstance(file_handle, FakeFileWrapper):
-            file_handle.seek(pos, whence)
-        else:
+        if not isinstance(file_handle, FakeFileWrapper):
             self.filesystem.raise_os_error(errno.EBADF)
+        if whence == os.SEEK_CUR:
+            start = file_handle.tell()
+        elif whence == os.SEEK_END:
+            file_handle.flush()
+            start = file_handle.size
+        else:
+            start = 0
+        if start + pos < 0:
+            self.filesystem.raise_os_error(errno.EINVAL)
+        return file_handle.seek(pos, whence)
 
     def pipe(self) -> tuple[int, int]:
         read_fd, write_fd = os.pipe()

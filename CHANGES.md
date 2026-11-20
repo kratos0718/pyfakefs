@@ -7,6 +7,9 @@ The released versions correspond to PyPI releases.
 
 ### Fixes
 
+* `os.lseek` now returns the new file offset instead of `None`, and raises
+  `EINVAL` if the resulting offset would be negative
+
 * path operations on paths with too long path components now correctly raise
   `ENAMETOOLONG` under Posix
   (see [issue #1374](https://github.com/pytest-dev/pyfakefs/issues/1374))
