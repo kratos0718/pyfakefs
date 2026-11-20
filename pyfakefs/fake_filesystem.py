@@ -3305,6 +3305,11 @@ class FakeFilesystem:
         if target_directory == matching_string(target_directory, "."):
             error_nr = errno.EACCES if self.is_windows_fs else errno.EINVAL
             self.raise_os_error(error_nr, target_directory)
+        if not self.is_windows_fs:
+            sep = self.get_path_separator(target_directory)
+            _, tail = self.splitpath(target_directory.rstrip(sep))
+            if tail == matching_string(target_directory, "."):
+                self.raise_os_error(errno.EINVAL, target_directory)
         ends_with_sep = self.ends_with_path_separator(target_directory)
         target_directory = self.absnormpath(target_directory)
         if self.confirmdir(target_directory, check_owner=True):

@@ -1514,6 +1514,15 @@ class FakeOsModuleTest(FakeOsModuleTestBase):
         self.check_windows_only()
         self.check_rmdir_raises_if_not_directory(errno.EACCES)
 
+    def test_rmdir_raises_if_last_component_is_dot_posix(self):
+        self.check_posix_only()
+        directory = self.make_path("xyzzy")
+        self.create_dir(directory)
+        dot_path = self.os.path.join(directory, ".")
+        self.assert_raises_os_error(errno.EINVAL, self.os.rmdir, dot_path)
+        self.assert_raises_os_error(errno.EINVAL, self.os.rmdir, dot_path + self.os.sep)
+        self.assertTrue(self.os.path.isdir(directory))
+
     def test_rmdir_raises_if_not_exist(self):
         """Raises an exception if the target does not exist."""
         directory = self.make_path("xyzzy")

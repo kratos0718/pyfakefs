@@ -7,6 +7,9 @@ The released versions correspond to PyPI releases.
 
 ### Fixes
 
+* `os.rmdir` no longer removes the directory under Posix if the last path
+  component is `.` (e.g. `os.rmdir("foo/.")`), but raises `EINVAL` like the real OS
+
 * path operations on paths with too long path components now correctly raise
   `ENAMETOOLONG` under Posix
   (see [issue #1374](https://github.com/pytest-dev/pyfakefs/issues/1374))
